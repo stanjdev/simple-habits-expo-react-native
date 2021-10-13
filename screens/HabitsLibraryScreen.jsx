@@ -144,7 +144,7 @@ export default function HabitsLibraryScreen ({ route, navigation }) {
         <TouchableOpacity onPress={goBack} style={{ padding: 15}}>
           <Image source={require('../assets/screen-icons/back-arrow-white.png')} style={{height: 20, marginLeft: 0}} resizeMode="contain"/>
         </TouchableOpacity>
-        <Text style={[{textAlign: "center", fontSize: 20, color: "#E0E0E0", position: "absolute", zIndex: -1, width: width}, styles.sourceCodeProMedium]}>SAVED HABITS</Text>        
+        <Text style={[{textAlign: "center", fontSize: 20, color: "#E0E0E0", position: "absolute", zIndex: -1, width: width}, styles.sourceCodeProMedium]}>Saved Habits</Text>        
       </View>
 
 
