@@ -1,8 +1,23 @@
 # Simple Habits
+Simple Habits is an iOS and Android mobile app for tracking habits. It uses push notifications to prompt a user to mark if they did or did not complete a habit for that day. A user's interaction with the notification writes a row of data into a Google Sheet.
+
 
 ## Installation
 On iPhone, download [Expo Go](https://apps.apple.com/us/app/expo-go/id982107779) 
+
 On Android, download [Expo](https://play.google.com/store/apps/details?id=host.exp.exponent&hl=en_US&gl=US)
 
 Using your phone camera, scan the QR Code at https://expo.dev/@stan.dev/Simple-Habits to install the app onto your device.
 
+## Usage
+Navigate to the `Add Habits` screen to add a habit to track, the frequency of days to track it, and the time at which you want to be reminded with a push notification.
+
+
+Navigate to the `Saved Habits` screen to see the habits you are currently tracking. Swipe left on any of the habits to delete. 
+
+
+## Contributing
+Pull requests are welcome. For major changes, please open an issue first to discuss what you would like to change.
+
+## License
+[MIT](https://choosealicense.com/licenses/mit/)
