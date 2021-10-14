@@ -255,7 +255,7 @@ export default function HabitsLibraryScreen ({ route, navigation }) {
     const habit1 = await Notifications.scheduleNotificationAsync({
       content: {
         title: "Simple Habits 📬",
-        body: `Did you do ${habitName}?`,
+        body: `Did you do: ${habitName}?`,
         data: { 
           data: 'Some data goes here',
           habit: habitName,
