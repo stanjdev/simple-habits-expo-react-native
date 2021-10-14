@@ -93,19 +93,11 @@ export default function SavePresetScreen({ navigation, route }) {
       selectedDays.splice(idxToRemove, 1);
       setSelectedDays([...selectedDays])
     }
-    // setHabitInfo({
-    //   ...habitInfo,
-    //   days: selectedDays,
-    // });
   };
 
   const toggleDailyButton = () => {
     if (selectedDays.length < 7) setSelectedDays(Object.keys(DAYS));
     else setSelectedDays([]);
-    // setHabitInfo({
-    //   ...habitInfo,
-    //   days: selectedDays,
-    // });
   };
 
   useEffect(() => {

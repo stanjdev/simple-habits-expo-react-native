@@ -22,26 +22,6 @@ export default function App() {
   useEffect(() => {
     loadFonts();
   }, [])
-
-  // useEffect(() => {
-  //   setTimeout(async () => {
-  //     try {
-  //       await SplashScreen.preventAutoHideAsync();
-  //     } catch (error) {
-  //       console.warn(error);
-  //     }
-  //   }, 0);
-
-  //   return () => SplashScreen.hideAsync();
-  // }, [])
-
-  // useEffect(() => {
-  //   setTimeout(async () => {
-  //     await SplashScreen.preventAutoHideAsync();
-  //     // await SplashScreen.hideAsync();
-  //   }, 0);
-  //   return () => SplashScreen.hideAsync();
-  // }, [])
   
   return fontsLoaded ? (
     <SafeAreaProvider>

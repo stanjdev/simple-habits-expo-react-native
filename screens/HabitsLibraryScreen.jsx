@@ -10,6 +10,8 @@ import Constants from 'expo-constants';
 import * as Google from 'expo-google-app-auth';
 import * as Notifications from 'expo-notifications';
 
+import {sheetID, API_KEY, IOS_CLIENT_ID} from '@env';
+
 Notifications.setNotificationHandler({
   handleNotification: async () => ({
     shouldShowAlert: true,
@@ -48,7 +50,6 @@ export default function HabitsLibraryScreen ({ route, navigation }) {
       let presetsArr = storedPresets ? await JSON.parse(storedPresets) : new Array();
       setPresetsLib(presetsArr);
     }, 0)
-    console.log("presetsLib: ", presetsLib);
   }, [habitInfo]);
 
   const closeRow = (rowMap, rowKey) => {
@@ -114,13 +115,10 @@ export default function HabitsLibraryScreen ({ route, navigation }) {
 
 /* NOTIFICATIONS LOGIC */
 
-  // PUT INTO PRIVATE ENV FILE!!!
-  const sheetID = '1Z5V7z8_UtTlr0oNe1ljyQBhOCBvtOjh-rYA5Dr_meBM';
+  
+  // Could be customizable
   const sheetName = 'simple-habits';
-  const API_KEY = 'AIzaSyDu_JI0KmBRaMhi1OrluHyZIzOXwomMtAY';
-  const IOS_CLIENT_ID = '938423599869-vp960btj8mlm4pmlgfu41q0jmo3b0j3l.apps.googleusercontent.com';
-
-
+  
   const [notification, setNotification] = useState(false);
   const notificationListener = useRef();
   const responseListener = useRef();
@@ -196,8 +194,8 @@ export default function HabitsLibraryScreen ({ route, navigation }) {
         iosClientId: IOS_CLIENT_ID,
         //androidClientId: AND_CLIENT_ID,
         scopes: [
-          'profile', 
-          'email', 
+          // 'profile', 
+          // 'email', 
           'https://www.googleapis.com/auth/spreadsheets',
         ],
       });

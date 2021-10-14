@@ -4,8 +4,7 @@ import { useFonts } from 'expo-font';
 const { width, height } = Dimensions.get('window');
 
 
-
-export default function PresetButton ({onPress, habitName, days=['Daily'], reminderTime, restTime=180}) {
+export default function PresetButton ({onPress, habitName, days=['Daily'], reminderTime }) {
 
   let [fontsLoaded] = useFonts({
     'SourceCodePro-Regular': require('../assets/fonts/Source_Code_Pro/SourceCodePro-Regular.ttf'),
@@ -23,7 +22,6 @@ export default function PresetButton ({onPress, habitName, days=['Daily'], remin
             <View style={[styles.subTextStyle]}>
               <Text style={styles.subTextFont}>{days.length === 7 ? 'Daily' : days.toString()}</Text>
               <Text style={styles.subTextFont}>{reminderTime}</Text>
-              {/* <Text style={styles.subTextFont}>{`${Math.floor(restTime / 60)}:${restTime % 60 || "00"}`} REST</Text> */}
             </View>
           </View>
       </View>
