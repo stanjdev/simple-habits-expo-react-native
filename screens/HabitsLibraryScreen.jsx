@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { Text, View, Alert, StyleSheet, StatusBar, Dimensions, ImageBackground, TouchableOpacity, Image, ScrollView, TouchableWithoutFeedback} from 'react-native';
 import { useIsFocused } from '@react-navigation/native';
 import { useFonts } from 'expo-font';
@@ -6,6 +6,19 @@ import AppButton from '../components/AppButton';
 const { width, height } = Dimensions.get('window');
 import PresetButton from '../components/PresetButton';
 const trashcan = require('../assets/screen-icons/trashcan.png');
+import Constants from 'expo-constants';
+import * as Google from 'expo-google-app-auth';
+import * as Notifications from 'expo-notifications';
+
+Notifications.setNotificationHandler({
+  handleNotification: async () => ({
+    shouldShowAlert: true,
+    shouldPlaySound: true,
+    shouldSetBadge: false,
+    priority: 'high'
+  }),
+});
+
 
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
@@ -23,8 +36,10 @@ export default function HabitsLibraryScreen ({ route, navigation }) {
   const [ presetsLib, setPresetsLib ] = useState([]);
 
   const goBack = () => {
-    navigation.navigate("TestScreen");
+    navigation.navigate("AddHabitScreen");
   }
+
+  const { habitInfo } = route.params;
 
   useEffect(() => {
     setTimeout(async() => {
@@ -33,47 +48,8 @@ export default function HabitsLibraryScreen ({ route, navigation }) {
       let presetsArr = storedPresets ? await JSON.parse(storedPresets) : new Array();
       setPresetsLib(presetsArr);
     }, 0)
-  }, [])
-
-  const sampleWorkouts = [
-    {
-      key: "1",
-      presetName: "SAMPLE WORKOUT 1",
-      numSets: 10,
-      workTime: 180,
-      restTime: 360,
-    }, {
-      key: "2",
-      presetName: "FRIDAY HIIT",
-      numSets: 10,
-      workTime: 180,
-      restTime: 360,
-    }, {
-      key: "3",
-      presetName: "SLOW CHEST WORKOUT",
-      numSets: 10,
-      workTime: 180,
-      restTime: 360,
-    }, {
-      key: "4",
-      presetName: "SAMPLE WORKOUT 2",
-      numSets: 10,
-      workTime: 180,
-      restTime: 360,
-    }, {
-      key: "5",
-      presetName: "FRIDAY HIIT",
-      numSets: 10,
-      workTime: 180,
-      restTime: 360,
-    }, {
-      key: "6",
-      presetName: "SLOW CHEST WORKOUT",
-      numSets: 10,
-      workTime: 180,
-      restTime: 360,
-    }
-  ];
+    console.log("presetsLib: ", presetsLib);
+  }, [habitInfo]);
 
   const closeRow = (rowMap, rowKey) => {
     if (rowMap[rowKey]) rowMap[rowKey].closeRow();
@@ -103,23 +79,18 @@ export default function HabitsLibraryScreen ({ route, navigation }) {
     ]);
   };
 
-  // useEffect(() => {
-
-  // }, [deleteItem])
-
-
   const renderFrontItem = (data, i) => (
     <View>
       <PresetButton 
-        key={data.item.presetName} 
-        presetName={data.item.presetName} 
-        sets={data.item.numSets}
-        workTime={data.item.workTime}
-        restTime={data.item.restTime}
-        // onPress={() => navigation.navigate('TimerSetScreen', { presetInfo: data.item })}
+        key={data.item.habitName}
+        habitName={data.item.habitName} 
+        days={data.item.days}
+        reminderTime={data.item.reminderTime}
+        // onPress={() => navigation.navigate('TimerSetScreen', { habitInfo: data.item })}
+
         // IT SHOULD LAUNCH A NOTIFICATION FOR MANUAL LOGGING
         // LATER, IT SHOULD GO TO ITS OWN PROGRESS SCREEN.
-        onPress={() => null}
+        onPress={() => pressButtonTest(data.item.habitName)}
       />
     </View>
   );
@@ -136,13 +107,234 @@ export default function HabitsLibraryScreen ({ route, navigation }) {
   );
 
 
+
+
+
+
+
+/* NOTIFICATIONS LOGIC */
+
+  // PUT INTO PRIVATE ENV FILE!!!
+  const sheetID = '1Z5V7z8_UtTlr0oNe1ljyQBhOCBvtOjh-rYA5Dr_meBM';
+  const sheetName = 'simple-habits';
+  const API_KEY = 'AIzaSyDu_JI0KmBRaMhi1OrluHyZIzOXwomMtAY';
+  const IOS_CLIENT_ID = '938423599869-vp960btj8mlm4pmlgfu41q0jmo3b0j3l.apps.googleusercontent.com';
+
+
+  const [notification, setNotification] = useState(false);
+  const notificationListener = useRef();
+  const responseListener = useRef();
+  let ACCESS_TOKEN = useRef();
+
+  useEffect(() => {
+    // setTimeout(async () => {
+    //   if (!ACCESS_TOKEN.current) {
+    //     ACCESS_TOKEN.current = await signInWithGoogleAsync();
+    //   }
+    // }, 0);
+
+    registerForPushNotificationsAsync().then(token => console.log(token))
+    .catch(err => console.error(err))
+
+    notificationListener.current = Notifications.addNotificationReceivedListener(notification => {
+      setNotification(notification);
+    });
+    
+    responseListener.current = Notifications.addNotificationResponseReceivedListener(async response => {
+      if (response.actionIdentifier == "expo.modules.notifications.actions.DEFAULT") return;
+
+      const note = response.userText;
+      const habit = await response.notification.request.content.data.habit;
+      console.log(note, habit);
+
+      // Actual writing to Google Sheet
+      await writeToSheet(habit, note);
+    });
+
+    return () => {
+      Notifications.removeNotificationSubscription(notificationListener.current);
+      Notifications.removeNotificationSubscription(responseListener.current);
+    };
+  }, [])
+
+
+  /* ASK DEVICE FOR PERMISSION TO SEND NOTIFICATIONS */
+  async function registerForPushNotificationsAsync() {
+    let token;
+    if (Constants.isDevice) {
+      const { status: existingStatus } = await Notifications.getPermissionsAsync();
+      let finalStatus = existingStatus;
+      if (existingStatus !== 'granted') {
+        const { status } = await Notifications.requestPermissionsAsync();
+        finalStatus = status;
+      }
+      if (finalStatus !== 'granted') {
+        alert('Failed to get push token for push notification!');
+        return;
+      }
+      token = (await Notifications.getExpoPushTokenAsync()).data;
+      console.log(token);
+    } else {
+      alert('Must use physical device for Push Notifications');
+    }
+  
+    if (Platform.OS === 'android') {
+      Notifications.setNotificationChannelAsync('default', {
+        name: 'default',
+        importance: Notifications.AndroidImportance.MAX,
+        vibrationPattern: [0, 250, 250, 250],
+        lightColor: '#FF231F7C',
+      });
+    }
+    return token;
+  }
+
+  /* GOOGLE SIGN IN FOR ACCESS TOKEN */
+  async function signInWithGoogleAsync() {
+    try {
+      const result = await Google.logInAsync({
+        iosClientId: IOS_CLIENT_ID,
+        //androidClientId: AND_CLIENT_ID,
+        scopes: [
+          'profile', 
+          'email', 
+          'https://www.googleapis.com/auth/spreadsheets',
+        ],
+      });
+
+      if (result.type === 'success') {
+        // console.log("refreshToken:", result.refreshToken)
+        return result.accessToken;
+      } else {
+        return false;
+      }
+    } catch (e) {
+      return { error: true };
+    }
+  }
+
+
+  /* SCHEDULE NOTIFICATION */
+  async function schedulePushNotification(habitName) {
+    await Notifications.setNotificationCategoryAsync("habit", [
+        {
+          actionId: "markDone",
+          identifier: "markDone",
+          buttonTitle: 'DONE',
+          isDestructive: false,
+          isAuthenticationRequired: false,
+          options: {
+            opensAppToForeground: false
+          }
+        },
+        {
+          actionId: "markDoneAndNote",
+          identifier: "markDoneAndNote",
+          buttonTitle: 'DONE + ADD NOTE',
+          textInput: {
+            submitButtonTitle: 'Submit Note',
+          },
+          isDestructive: false,
+          isAuthenticationRequired: false,
+          options: {
+            opensAppToForeground: false
+          }
+        },
+      ],
+    );
+    
+    const testHabit = 'Water Plants';
+    
+    // const trigger = new Date();
+    // trigger.setHours(9);
+    // trigger.setMinutes(0);
+    // trigger.setSeconds(0);
+    // console.log(trigger);
+
+    // let trigger = Date.now();
+    // trigger += 5000;
+
+    const habit1 = await Notifications.scheduleNotificationAsync({
+      content: {
+        title: "Simple Habits 📬",
+        body: `Did you do ${habitName}?`,
+        data: { 
+          data: 'Some data goes here',
+          habit: habitName,
+          'content-available': 1
+        },
+        priority: 'high',
+        categoryIdentifier: 'habit',
+        sound: 'default'
+      },
+      trigger: {
+        // seconds: 0
+      }
+    });
+  }
+
+
+    /* SHEET OPERATIONS: */
+    const getSheetValues = async () => {
+      const request = await fetch(
+        `https://sheets.googleapis.com/v4/spreadsheets/${sheetID}/values/${sheetName}?key=${API_KEY}`
+      );
+      const data = await request.json();
+      console.log(data);
+      return data;
+    };
+  
+    // Requires Access Token
+    const writeToSheet = async (habit, note='') => {
+      // let [ACCESS_TOKEN, REFRESH_TOKEN] = await signInWithGoogleAsync();
+      // let ACCESS_TOKEN = 'ya29.a0ARrdaM8xQPqAYjsfdsyhCjEeupFeRa9VeNHHrdr8-syzZSvIGllpqPtooAvTI00Mxnz99N4WGMNFkoftJrWBpamE3ghhAbKcfHMYPeahnqrPGwugZsRY9nljA5XyY_jnyOmV0Qzj8_SQtV5oC8bbWnLH-Xfs';
+  
+      console.log("current token:", ACCESS_TOKEN.current)
+  
+      // console.log(ACCESS_TOKEN);
+      const request = await fetch(
+        `https://sheets.googleapis.com/v4/spreadsheets/${sheetID}/values/${sheetName}!A1:E1:append?valueInputOption=USER_ENTERED`,
+        {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            Authorization: `Bearer ${ACCESS_TOKEN.current}`,
+          },
+          body: JSON.stringify({
+            "range": "simple-habits!A1:E1",
+            "majorDimension": "ROWS",
+            "values": [
+              [habit, new Date(), note],
+            ],
+          }),
+        }
+      );
+      const data = await request.json();
+      console.log(data);
+      return data;
+    };
+  
+
+
+ /* PRESS A HABIT ACTION */
+  const pressButtonTest = async (habitName) => {
+    if (!ACCESS_TOKEN.current) {
+      ACCESS_TOKEN.current = await signInWithGoogleAsync();
+    }
+    if (ACCESS_TOKEN.current !== false) await schedulePushNotification(habitName);
+  };
+
+
   return (
     <View style={styles.container}>
       <StatusBar hidden={true}/>
 
       <View style={{ width: width, flexDirection: "row", alignItems: "center", marginTop: height < 700 ? 40 : height * 0.07, position: "absolute", zIndex: 100 }}>
-        <TouchableOpacity onPress={goBack} style={{ padding: 15}}>
-          <Image source={require('../assets/screen-icons/back-arrow-white.png')} style={{height: 20, marginLeft: 0}} resizeMode="contain"/>
+        <TouchableOpacity onPress={() => navigation.navigate('AddHabitScreen')} style={{ padding: 15, paddingLeft: 0}}>
+          <Image source={require('../assets/screen-icons/plus-symbol.png')} style={{height: 20, }} resizeMode="contain"/>
+        </TouchableOpacity>
+        <TouchableOpacity onPress={() => navigation.navigate('TestScreen')} style={{ padding: 10, position: "absolute", top: height * 0.007, right: width * 0.05, zIndex: 100,  }}>
+          <Image source={require('../assets/screen-icons/gear-grey.png')} style={{ height: 27, width: 27 }} resizeMode="contain"/>
         </TouchableOpacity>
         <Text style={[{textAlign: "center", fontSize: 20, color: "#E0E0E0", position: "absolute", zIndex: -1, width: width}, styles.sourceCodeProMedium]}>Saved Habits</Text>        
       </View>

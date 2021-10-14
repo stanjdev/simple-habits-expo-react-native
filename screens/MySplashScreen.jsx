@@ -15,8 +15,8 @@ export default function MySplashScreen ({ route, navigation }) {
   });
 
   const navTo = () => route.params ? 
-                      navigation.navigate('TestScreen')
-                    : navigation.navigate('TestScreen', { screen: 'Meditate' })
+                      navigation.navigate('HabitsLibraryScreen')
+                    : navigation.navigate('HabitsLibraryScreen', { screen: 'Meditate' })
 
   useEffect(() => {
     let timeout = setTimeout(() => {

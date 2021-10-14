@@ -5,7 +5,7 @@ const { width, height } = Dimensions.get('window');
 
 
 
-export default function PresetButton ({onPress, presetName, sets=4, workTime=120, restTime=180}) {
+export default function PresetButton ({onPress, habitName, days=['Daily'], reminderTime, restTime=180}) {
 
   let [fontsLoaded] = useFonts({
     'SourceCodePro-Regular': require('../assets/fonts/Source_Code_Pro/SourceCodePro-Regular.ttf'),
@@ -13,14 +13,16 @@ export default function PresetButton ({onPress, presetName, sets=4, workTime=120
     'SourceCodePro-SemiBold': require('../assets/fonts/Source_Code_Pro/SourceCodePro-SemiBold.ttf'),
   });
 
+  console.log('days from AddHabitScreen:', habitName, days.join(', '))
+
   return (
     <TouchableWithoutFeedback onPress={onPress} >
       <View style={styles.button}>
           <View style={{flexDirection: "column"}}>
-            <Text style={[styles.presetNameTextStyle, styles.sourceCodeProMedium]}>{presetName}</Text>
+            <Text style={[styles.habitNameTextStyle, styles.sourceCodeProMedium]}>{habitName}</Text>
             <View style={[styles.subTextStyle]}>
-              <Text style={styles.subTextFont}>Daily</Text>
-              <Text style={styles.subTextFont}>{`${Math.floor(workTime / 60)}:${workTime % 60 || "00"}`} PM</Text>
+              <Text style={styles.subTextFont}>{days.length === 7 ? 'Daily' : days.toString()}</Text>
+              <Text style={styles.subTextFont}>{reminderTime}</Text>
               {/* <Text style={styles.subTextFont}>{`${Math.floor(restTime / 60)}:${restTime % 60 || "00"}`} REST</Text> */}
             </View>
           </View>
@@ -40,7 +42,7 @@ const styles = StyleSheet.create({
     marginTop: 7,
     marginBottom: 7
   },
-  presetNameTextStyle: {
+  habitNameTextStyle: {
     fontSize: 24,
     color: "#FFFFFF",
     width: width * 0.88,
@@ -55,7 +57,7 @@ const styles = StyleSheet.create({
     paddingRight: 18, 
     paddingTop: 8,
     width: width * 0.88, 
-    // borderWidth: 1, 
+    // borderWidth: 1,
     // borderColor: "lightgreen"
   },
   subTextFont: { 
