@@ -1,11 +1,9 @@
-import React, { useEffect, useState, useRef } from 'react';
+import React from 'react';
 import { Text, View, StatusBar, Image, Dimensions, StyleSheet, TouchableOpacity } from 'react-native';
 import AppButton from '../components/AppButton';
 import { useIsFocused } from '@react-navigation/native';
 import { useFonts } from 'expo-font';
 const { width, height } = Dimensions.get('window');
-import Constants from 'expo-constants';
-import * as Google from 'expo-google-app-auth';
 import * as Notifications from 'expo-notifications';
 
 Notifications.setNotificationHandler({
@@ -17,16 +15,8 @@ Notifications.setNotificationHandler({
   }),
 });
 
-import AsyncStorage from '@react-native-async-storage/async-storage';
-
 export default function TestScreen({ navigation, route }) {
 
-
-
-
-
-  
-  
   const viewScheduled = async () => {
     // See what's scheduled (array): 
     console.log(await Notifications.getAllScheduledNotificationsAsync());
@@ -36,23 +26,6 @@ export default function TestScreen({ navigation, route }) {
     // EMERGENCY KILL SWITCH
     console.log(await Notifications.cancelAllScheduledNotificationsAsync());
   };
-
-
-
-
-
-
-
-
-
-
-
-
-/*  */
-
-
-
-
 
   const isFocused = useIsFocused();
 
@@ -104,7 +77,6 @@ export default function TestScreen({ navigation, route }) {
         </View>
       </View>
 
-      
     </View>
   )
 };

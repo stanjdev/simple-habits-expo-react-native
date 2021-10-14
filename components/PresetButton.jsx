@@ -12,8 +12,6 @@ export default function PresetButton ({onPress, habitName, days=['Daily'], remin
     'SourceCodePro-SemiBold': require('../assets/fonts/Source_Code_Pro/SourceCodePro-SemiBold.ttf'),
   });
 
-  console.log('days from AddHabitScreen:', habitName, days.join(', '))
-
   return (
     <TouchableWithoutFeedback onPress={onPress} >
       <View style={styles.button}>

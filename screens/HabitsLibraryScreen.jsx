@@ -46,7 +46,6 @@ export default function HabitsLibraryScreen ({ route, navigation }) {
   useEffect(() => {
     setTimeout(async() => {
       let storedPresets = await AsyncStorage.getItem('presetsArray');
-      // let presetsArr = storedPresets ? await JSON.parse(storedPresets) : sampleWorkouts;
       let presetsArr = storedPresets ? await JSON.parse(storedPresets) : new Array();
       setPresetsLib(presetsArr);
     }, 0)
@@ -91,7 +90,7 @@ export default function HabitsLibraryScreen ({ route, navigation }) {
 
         // IT SHOULD LAUNCH A NOTIFICATION FOR MANUAL LOGGING
         // LATER, IT SHOULD GO TO ITS OWN PROGRESS SCREEN.
-        onPress={() => pressButtonTest(data.item.habitName)}
+        onPress={() => pressHabit(data.item.habitName)}
       />
     </View>
   );
@@ -109,31 +108,18 @@ export default function HabitsLibraryScreen ({ route, navigation }) {
 
 
 
-
-
-
-
-/* NOTIFICATIONS LOGIC */
-
-  
-  // Could be customizable
-  const sheetName = 'simple-habits';
-  
+/* NOTIFICATIONS LOGIC */  
   const [notification, setNotification] = useState(false);
   const notificationListener = useRef();
   const responseListener = useRef();
   let ACCESS_TOKEN = useRef();
 
-  useEffect(() => {
-    // setTimeout(async () => {
-    //   if (!ACCESS_TOKEN.current) {
-    //     ACCESS_TOKEN.current = await signInWithGoogleAsync();
-    //   }
-    // }, 0);
 
-    registerForPushNotificationsAsync().then(token => console.log(token))
+  useEffect(() => {
+    registerForPushNotificationsAsync().then(token => console.log('register for push notifs token:', token))
     .catch(err => console.error(err))
 
+    /* NOTIFICATION RESPONSE LISTENERS */
     notificationListener.current = Notifications.addNotificationReceivedListener(notification => {
       setNotification(notification);
     });
@@ -143,7 +129,6 @@ export default function HabitsLibraryScreen ({ route, navigation }) {
 
       const note = response.userText;
       const habit = await response.notification.request.content.data.habit;
-      console.log(note, habit);
 
       // Actual writing to Google Sheet
       await writeToSheet(habit, note);
@@ -171,9 +156,8 @@ export default function HabitsLibraryScreen ({ route, navigation }) {
         return;
       }
       token = (await Notifications.getExpoPushTokenAsync()).data;
-      console.log(token);
     } else {
-      alert('Must use physical device for Push Notifications');
+      console.log('Must use physical device for Push Notifications!');
     }
   
     if (Platform.OS === 'android') {
@@ -190,7 +174,7 @@ export default function HabitsLibraryScreen ({ route, navigation }) {
   /* GOOGLE SIGN IN FOR ACCESS TOKEN */
   async function signInWithGoogleAsync() {
     try {
-      const result = await Google.logInAsync({
+      const { type, accessToken, user, refreshToken } = await Google.logInAsync({
         iosClientId: IOS_CLIENT_ID,
         //androidClientId: AND_CLIENT_ID,
         scopes: [
@@ -200,9 +184,8 @@ export default function HabitsLibraryScreen ({ route, navigation }) {
         ],
       });
 
-      if (result.type === 'success') {
-        // console.log("refreshToken:", result.refreshToken)
-        return result.accessToken;
+      if (type === 'success') {
+        return accessToken;
       } else {
         return false;
       }
@@ -241,8 +224,6 @@ export default function HabitsLibraryScreen ({ route, navigation }) {
       ],
     );
     
-    const testHabit = 'Water Plants';
-    
     // const trigger = new Date();
     // trigger.setHours(9);
     // trigger.setMinutes(0);
@@ -252,7 +233,7 @@ export default function HabitsLibraryScreen ({ route, navigation }) {
     // let trigger = Date.now();
     // trigger += 5000;
 
-    const habit1 = await Notifications.scheduleNotificationAsync({
+    await Notifications.scheduleNotificationAsync({
       content: {
         title: "Simple Habits 📬",
         body: `Did you do: ${habitName}?`,
@@ -272,50 +253,49 @@ export default function HabitsLibraryScreen ({ route, navigation }) {
   }
 
 
+    // Could be customizable:
+    const sheetName = 'simple-habits';
+    
     /* SHEET OPERATIONS: */
+    // READ:
     const getSheetValues = async () => {
       const request = await fetch(
         `https://sheets.googleapis.com/v4/spreadsheets/${sheetID}/values/${sheetName}?key=${API_KEY}`
       );
       const data = await request.json();
-      console.log(data);
       return data;
     };
   
-    // Requires Access Token
+    // WRITE: (Requires Access Token)
     const writeToSheet = async (habit, note='') => {
-      // let [ACCESS_TOKEN, REFRESH_TOKEN] = await signInWithGoogleAsync();
-      // let ACCESS_TOKEN = 'ya29.a0ARrdaM8xQPqAYjsfdsyhCjEeupFeRa9VeNHHrdr8-syzZSvIGllpqPtooAvTI00Mxnz99N4WGMNFkoftJrWBpamE3ghhAbKcfHMYPeahnqrPGwugZsRY9nljA5XyY_jnyOmV0Qzj8_SQtV5oC8bbWnLH-Xfs';
-  
-      console.log("current token:", ACCESS_TOKEN.current)
-  
-      // console.log(ACCESS_TOKEN);
-      const request = await fetch(
-        `https://sheets.googleapis.com/v4/spreadsheets/${sheetID}/values/${sheetName}!A1:E1:append?valueInputOption=USER_ENTERED`,
-        {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            Authorization: `Bearer ${ACCESS_TOKEN.current}`,
-          },
-          body: JSON.stringify({
-            "range": "simple-habits!A1:E1",
-            "majorDimension": "ROWS",
-            "values": [
-              [habit, new Date(), note],
-            ],
-          }),
-        }
-      );
-      const data = await request.json();
-      console.log(data);
-      return data;
+      try {
+        const request = await fetch(
+          `https://sheets.googleapis.com/v4/spreadsheets/${sheetID}/values/${sheetName}!A1:E1:append?valueInputOption=USER_ENTERED`,
+          {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              Authorization: `Bearer ${ACCESS_TOKEN.current}`,
+            },
+            body: JSON.stringify({
+              "range": "simple-habits!A1:E1",
+              "majorDimension": "ROWS",
+              "values": [
+                [habit, Date(), note],
+              ],
+            }),
+          }
+        );
+        const data = await request.json();
+        return data;
+      } catch (err) {
+        console.log(err);
+      }
     };
   
-
 
  /* PRESS A HABIT ACTION */
-  const pressButtonTest = async (habitName) => {
+  const pressHabit = async (habitName) => {
     if (!ACCESS_TOKEN.current) {
       ACCESS_TOKEN.current = await signInWithGoogleAsync();
     }

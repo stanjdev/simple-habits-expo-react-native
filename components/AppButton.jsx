@@ -1,8 +1,5 @@
 import React from 'react';
-import { TouchableOpacity, View, Text, Image, TouchableWithoutFeedback } from 'react-native';
-import { MaterialCommunityIcons } from '@expo/vector-icons';
-import { Fontisto } from '@expo/vector-icons';
-import { FontAwesome } from '@expo/vector-icons';
+import { TouchableOpacity, View, Text, Image } from 'react-native';
 
 const AppButton = ({onPress, title, buttonStyles, buttonTextStyles, icon, iconStyles, name, size, color, disabled}) => (
   <TouchableOpacity onPress={onPress} style={buttonStyles} disabled={disabled || false}>
