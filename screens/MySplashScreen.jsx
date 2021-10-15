@@ -37,7 +37,7 @@ export default function MySplashScreen ({ route, navigation }) {
         <View style={{height: height, width: width, justifyContent: "center", alignItems: "center"}}>
           {/* <ImageBackground source={bgImage} style={styles.image}> */}
             <Text style={[styles.titleText, styles.sourceCodeProMedium]}>Simple Habits</Text>
-            <Text style={[styles.subTitleText, styles.sourceCodeProMedium]}>by Stan Jeong</Text>
+            {/* <Text style={[styles.subTitleText, styles.sourceCodeProMedium]}>by Stan Jeong</Text> */}
           {/* </ImageBackground> */}
         </View>
       </View>

@@ -56,7 +56,7 @@ export default function HabitsLibraryScreen ({ route, navigation }) {
   };
 
   const deleteItem = (data, rowMap) => {
-    Alert.alert("Delete this preset?", "This action cannot be undone.", [
+    Alert.alert("Delete this habit?", "This action cannot be undone.", [
       {text: "Delete", style: "cancel", onPress: async () => {
         // closeRow(rowMap, data.item.key);
 
@@ -235,7 +235,7 @@ export default function HabitsLibraryScreen ({ route, navigation }) {
 
     await Notifications.scheduleNotificationAsync({
       content: {
-        title: "Simple Habits 📬",
+        title: "Simple Habits",
         body: `Did you do: ${habitName}?`,
         data: { 
           data: 'Some data goes here',
@@ -311,9 +311,9 @@ export default function HabitsLibraryScreen ({ route, navigation }) {
         <TouchableOpacity onPress={() => navigation.navigate('AddHabitScreen')} style={{ padding: 15, paddingLeft: 0}}>
           <Image source={require('../assets/screen-icons/plus-symbol.png')} style={{height: 20, }} resizeMode="contain"/>
         </TouchableOpacity>
-        <TouchableOpacity onPress={() => navigation.navigate('TestScreen')} style={{ padding: 10, position: "absolute", top: height * 0.007, right: width * 0.05, zIndex: 100,  }}>
+        {/* <TouchableOpacity onPress={() => navigation.navigate('TestScreen')} style={{ padding: 10, position: "absolute", top: height * 0.007, right: width * 0.05, zIndex: 100,  }}>
           <Image source={require('../assets/screen-icons/gear-grey.png')} style={{ height: 27, width: 27 }} resizeMode="contain"/>
-        </TouchableOpacity>
+        </TouchableOpacity> */}
         <Text style={[{textAlign: "center", fontSize: 20, color: "#E0E0E0", position: "absolute", zIndex: -1, width: width}, styles.sourceCodeProMedium]}>Saved Habits</Text>        
       </View>
 
